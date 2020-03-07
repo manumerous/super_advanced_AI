@@ -1,7 +1,10 @@
 def rsme_function (y, y_hat):
     rownumber = len(y)
-    for element in y:
-        x = (element - y_hat)*(element - y_hat)
+    sum = 0
+
+# rsme calculation requires input of two lists (y and y_hat values)
+    for i in range(len(y)):
+        x = (y[i] - y_hat[i])*(y[i] - y_hat[i])
         sum = sum + x
     rsme_variable = (1/rownumber*sum) ** 0.5
     return rsme_variable
