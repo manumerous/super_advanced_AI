@@ -32,6 +32,9 @@ class FileManager():
         dfn = pd.read_csv(file_name)
         return dfn
 
+    def save_dataframe_to_csv(self, dataframe, relative_filename)
+        dataframe.to_csv(relative_filename)
+
     # loads a csv file if there's exactly one csv file in the folder. 
     # This function is made so you only need to specify the path and
     #  you don't need to know the filename
