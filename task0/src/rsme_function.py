@@ -1,3 +1,16 @@
+#                                  _____                    __  .__               
+# _______  ______ _____   ____   _/ ____\_ __  ____   _____/  |_|__| ____   ____  
+# \_  __ \/  ___//     \_/ __ \  \   __\  |  \/    \_/ ___\   __\  |/  _ \ /    \ 
+#  |  | \/\___ \|  Y Y  \  ___/   |  | |  |  /   |  \  \___|  | |  (  <_> )   |  \
+#  |__|  /____  >__|_|  /\___  >  |__| |____/|___|  /\___  >__| |__|\____/|___|  /
+#             \/      \/     \/                   \/     \/                    \/
+'''Contains a function to calculate the root mean square error'''
+
+__author__ = "Jsmea Hug"
+__maintainer__ = "Jsmea Hug"
+__license__ = "GPL"
+
+
 def rsme_function (y, y_hat):
     rownumber = len(y)
     sum = 0

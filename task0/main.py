@@ -1,3 +1,11 @@
+#    _____         .__        
+#   /     \ _____  |__| ____  
+#  /  \ /  \\__  \ |  |/    \ 
+# /    Y    \/ __ \|  |   |  \
+# \____|__  (____  /__|___|  /
+#         \/     \/        \/ 
+'''The main file is used to start up the program and initialize the needed objects'''
+
 __author__ = "Manuel Galliker"
 __maintainer__ = "Manuel Galliker"
 __license__ = "GPL"
