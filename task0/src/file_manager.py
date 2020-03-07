@@ -23,8 +23,8 @@ from shutil import copyfile
 class FileManager():
 
     def __init__(self):
-        self.working_directory =os.getcwd()
-        
+        self.working_directory = os.getcwd()
+
     def load_csv(self, relative_filename):
         file_name = os.path.join(self.working_directory, relative_filename)
         dfn = pd.read_csv(file_name)
@@ -33,7 +33,7 @@ class FileManager():
     def save_dataframe_to_csv(self, dataframe, relative_filename):
         dataframe.to_csv(relative_filename, index=False)
 
-    # loads a csv file if there's exactly one csv file in the folder. 
+    # loads a csv file if there's exactly one csv file in the folder.
     # This function is made so you only need to specify the path and
     #  you don't need to know the filename
     def load_single_csv_from_folder(self, relative_path):
@@ -61,10 +61,12 @@ class FileManager():
             return single_frame, file_name
         # otherwise give error feedback
         elif len(file_name_list) > 1:
-            cprint(("Error loading single file from folder: Multiple files detected in folder!"), "red")
+            cprint(
+                ("Error loading single file from folder: Multiple files detected in folder!"), "red")
             return
         else:
-            cprint(("Error loading single file from folder: No file detected in folder!"), "red")
+            cprint(
+                ("Error loading single file from folder: No file detected in folder!"), "red")
             return
 
     # function to load all csv files from a certain folder and add them to a big dataframe
@@ -87,7 +89,8 @@ class FileManager():
             big_frame[file_name] = dfn
         file_name_list.sort()
         if len(file_name_list) < 1:
-            cprint(("Error loading all files from folder: No file detected in folder!"), "red")
+            cprint(
+                ("Error loading all files from folder: No file detected in folder!"), "red")
             return
         print("\n {} \n".format(file_name_list))
         return big_frame, file_name_list
@@ -105,8 +108,10 @@ class FileManager():
     # function to move a file
     def move_file(self, relative_source_path, relative_destination_path, file_name):
         try:
-            source_path = os.path.join(self.working_directory, relative_source_path)
-            destination_path = os.path.join(self.working_directory, relative_destination_path)
+            source_path = os.path.join(
+                self.working_directory, relative_source_path)
+            destination_path = os.path.join(
+                self.working_directory, relative_destination_path)
             source_file = os.path.join(source_path, file_name)
             destination_file = os.path.join(destination_path, file_name)
             os.rename(source_file, destination_file)

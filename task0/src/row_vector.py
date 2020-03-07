@@ -1,6 +1,16 @@
+# __________              ____   ____             __
+# \______   \ ______  _  _\   \ /   /____   _____/  |_  ___________
+#  |       _//  _ \ \/ \/ /\   Y   // __ \_/ ___\   __\/  _ \_  __ \
+#  |    |   (  <_> )     /  \     /\  ___/\  \___|  | (  <_> )  | \/
+#  |____|_  /\____/ \/\_/    \___/  \___  >\___  >__|  \____/|__|
+#         \/                            \/     \/
+
+'''The RowVector Object was used to ensure the correct data representation for task 0'''
+
 __author__ = "Manuel Galliker"
 __maintainer__ = "Manuel Galliker"
 __license__ = "GPL"
+
 
 class RowVector():
 
