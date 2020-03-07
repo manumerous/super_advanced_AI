@@ -4,7 +4,8 @@ __license__ = "GPL"
 
 from src import FileManager
 from src import RowVector
-from src import rsme_function
+from src import rsme_function as rsme_function
+import pandas as pd
 import statistics
 
 def main():
@@ -26,13 +27,30 @@ def main():
         mean_hat_collector.append(statistics.mean(current_row_vector.data))
 
     # Evaluation by rsmi based on training set
-    rsme_error = rsme_function(mean_collector, mean_hat_collector)
+    rsme_error = rsme_function.rsme_function(mean_collector, mean_hat_collector)
     print('the root mean square error is:')
     print(rsme_error)
 
+    ### Test Data ###
+    test_data = file_manager.load_csv('data/test.csv')
+    id_collector = []
+    mean_hat_collector = []
+
+    for i in range(len(test_data.index)):
+        # Representation
+        current_vector_data = test_data.loc[i]
+        current_vector_data = current_vector_data.values.tolist()
+        current_row_vector = RowVector(current_vector_data[0], 0, current_vector_data[1:])
+        
+        # Model Fitting
+        id_collector.append(current_row_vector.id)
+        mean_hat_collector.append(statistics.mean(current_row_vector.data))
+
+    output_df = pd.DataFrame(list(zip(id_collector, mean_hat_collector)), columns =['Id', 'y'])
+    file_manager.save_dataframe_to_csv(output_df, 'data/submission_file.csv')
+
     return
 
-    ### Predicition ### 
 
 
 if __name__ == "__main__":

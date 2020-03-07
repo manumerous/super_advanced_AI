@@ -25,15 +25,13 @@ class FileManager():
     def __init__(self):
         self.working_directory =os.getcwd()
         
-
-
     def load_csv(self, relative_filename):
         file_name = os.path.join(self.working_directory, relative_filename)
         dfn = pd.read_csv(file_name)
         return dfn
 
-    def save_dataframe_to_csv(self, dataframe, relative_filename)
-        dataframe.to_csv(relative_filename)
+    def save_dataframe_to_csv(self, dataframe, relative_filename):
+        dataframe.to_csv(relative_filename, index=False)
 
     # loads a csv file if there's exactly one csv file in the folder. 
     # This function is made so you only need to specify the path and
