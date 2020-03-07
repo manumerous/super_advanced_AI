@@ -4,7 +4,8 @@ __license__ = "GPL"
 
 class RowVector():
 
-    def __init__(self, vector_index, raw_vector_data):
+    def __init__(self, vector_index, vector_mean, raw_vector_data):
         self.id = vector_index
-        self.mean_value = 'none'
+        self.mean = vector_mean
+        self.mean_hat = 'none'
         self.data = raw_vector_data
