@@ -1,6 +1,6 @@
 # super_advanced_AI
 
-This is task 0. Aim of the task is to fit the mean value of the data set. 
+This is task 1. Aim of the task is to fit the mean value of the data set. 
 
 ## Installation and Development environment setup for Ubuntu 18.04 LTS 
 Ensure you have python3 installed.
