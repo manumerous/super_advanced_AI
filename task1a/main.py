@@ -12,7 +12,7 @@ __license__ = "GPL"
 
 from src import FileManager
 from src import RowVector
-from src import rsme_function as rsme_function
+from src import minimize_ridge_regression as mrr
 import pandas as pd
 import statistics
 
@@ -20,21 +20,20 @@ import statistics
 def main():
 
     file_manager = FileManager()
-    ### Training Data ###
-    training_data = file_manager.load_csv('data/train.csv')
 
+    ### Training Data Initialization ###
+    training_data_pd = file_manager.load_csv('data/train.csv')
+    training_data = training_data_pd.to_numpy()
+    # matrix containing all training feature data
+    training_features = training_data[:, 2:]
+    # vector containing all output labels
+    training_output = training_data[:,1]
 
-    for i in range(len(training_data.index)):
-        # Representation
-        current_vector_data = training_data.loc[i]
-        current_vector_data = current_vector_data.values.tolist()
-        current_row_vector = RowVector(
-            current_vector_data[0], current_vector_data[1], current_vector_data[2:])
+    reg_param_list = [0.01, 0.1, 1, 10, 100]
 
-        # Model Fitting
-
-
-
+    for reg_param in reg_param_list:
+        optimal_weights = mrr.minimize_ridge_regression(training_output, training_features, reg_param)
+        print(optimal_weights)
     return
 
 

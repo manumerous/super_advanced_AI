@@ -20,7 +20,6 @@ class RidgeRegressor():
         return rsme_variable
 
     def _calculate_optimization_cost(self, w, reg_param):
-        # cost = np.linalg.norm(w)
         cost = 0
         for i in range(self.data_length):
             cost += (self.y[i] - np.inner(w, self.x[i, :]))*(self.y[i] -
@@ -31,42 +30,38 @@ class RidgeRegressor():
     def _calculate_gradient(self, w, reg_param):
         gradient = np.zeros(len(w))
         for i in range(len(w)):
-            ### error might be here
             current_w = w
             current_w[i] += self.grad_res
             upper_cost = self._calculate_optimization_cost(current_w, reg_param)
-            # print(i)
-            # print(current_w)
-            # print('upper cost:', upper_cost)
             current_w[i] -= 2*self.grad_res
             lower_cost = self._calculate_optimization_cost(current_w, reg_param)
-            # print(current_w)
-            # print('lower cost:', lower_cost)
             gradient[i] = (upper_cost-lower_cost)/(2*self.grad_res)
             current_w[i] += self.grad_res
-            # print(gradient[i])
         return gradient
 
     def minimize_ridge_regression(self, reg_param):
 
         start = time.time()
         data_length = 13
-        current_w = np.ones(data_length)
+        current_w = np.zeros(data_length)
         current_gradient = np.ones(data_length)
-        print('norm', np.linalg.norm(current_w+current_w))
-        grad_factor = 0.001
-        print('grad factor', grad_factor)
-        while(np.linalg.norm(current_gradient) > 2):
+        learning_rate = 1
+        print('grad factor', learning_rate)
+        iteration = 0
+
+        # gradient descent loop
+        while(np.linalg.norm(learning_rate*current_gradient) > 0.000000001 and iteration < 10000):
             current_gradient = self._calculate_gradient(
                 current_w, reg_param)
-            # print(current_gradient)
-            # print(grad_factor*current_gradient)
-            # print('current_w before:', current_w)
-            current_w = np.subtract(current_w, grad_factor*current_gradient)
-            # print('current_w after:', current_w)
-            print('gradient step:', np.linalg.norm(current_gradient))
-            print('current cost:', self._calculate_optimization_cost(current_w, reg_param))
-            time.sleep(0.1)
+            new_w = np.subtract(current_w, learning_rate*current_gradient)
+            new_cost = self._calculate_optimization_cost(new_w, reg_param)
+            current_cost = self._calculate_optimization_cost(current_w, reg_param)
+            while( new_cost > current_cost ):
+                learning_rate = learning_rate/10
+                new_w = np.subtract(current_w, learning_rate*current_gradient)
+                new_cost = self._calculate_optimization_cost(new_w, reg_param)
+            current_w = np.subtract(current_w, learning_rate*current_gradient)
+            iteration += 1 
         end = time.time()
         print('calculation time:', end - start)
         return current_w
@@ -80,7 +75,6 @@ def main():
     rr = RidgeRegressor(y, data)
     optimal_weights = rr.minimize_ridge_regression(1)
     print(optimal_weights)
-    # print(np.inner(optimal_weights, data))
     print("rmse:", rr.calculate_rsme(np.inner(optimal_weights, data)))
 
 
