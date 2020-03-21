@@ -16,6 +16,7 @@ def calculate_rmse(y, y_hat):
     rownumber = len(y)
     sum = 0
     for i in range(len(y)):
+        y_hat
         x = (y[i] - y_hat[i])*(y[i] - y_hat[i])
         sum = sum + x
     rsme_variable = (1/rownumber*sum) ** 0.5

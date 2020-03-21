@@ -11,8 +11,12 @@ __maintainer__ = "Manuel Galliker"
 __license__ = "GPL"
 
 from src import FileManager
-from src import RowVector
-from src import minimize_ridge_regression as mrr
+from src import DataContainer
+from src import GradientDescent
+from src import ridge_regression_solver as rgs
+from src import generate_cv_datasets as gcv
+from src import calculate_rmse as rmse
+import numpy as np
 import pandas as pd
 import statistics
 
@@ -23,17 +27,35 @@ def main():
 
     ### Training Data Initialization ###
     training_data_pd = file_manager.load_csv('data/train.csv')
-    training_data = training_data_pd.to_numpy()
-    # matrix containing all training feature data
-    training_features = training_data[:, 2:]
-    # vector containing all output labels
-    training_output = training_data[:,1]
+    raw_data = training_data_pd.to_numpy()
 
     reg_param_list = [0.01, 0.1, 1, 10, 100]
+    cross_validation_count = 10
 
     for reg_param in reg_param_list:
-        optimal_weights = mrr.minimize_ridge_regression(training_output, training_features, reg_param)
-        print(optimal_weights)
+
+        weight_collector = np.zeros(13)
+        rmse_collector = 0
+        for i in range(cross_validation_count):
+
+            raw_test_set, raw_train_set = gcv.generate_cv_datasets(
+                cross_validation_count, i, raw_data)
+            test_set = DataContainer(raw_test_set)
+            train_set = DataContainer(raw_train_set)
+            optimal_weights = rgs.minimize_ridge_regression(
+                train_set.get_y(), train_set.get_x(), reg_param)
+            weight_collector += optimal_weights
+            # print(test_set.x.shape)
+            y_hat = optimal_weights @ test_set.get_x().transpose()
+            # print(y_hat)
+            rmse_collector += rmse.calculate_rmse(test_set.get_y(), y_hat )
+
+
+        averaged_weights = weight_collector/cross_validation_count
+        averaged_rmse = rmse_collector/cross_validation_count
+        # print(averaged_weights)
+        print(averaged_rmse)
+
     return
 
 
