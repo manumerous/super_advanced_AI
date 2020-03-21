@@ -19,7 +19,7 @@ def calculate_rsme(y, y_hat):
     return rsme_variable
 
 # analytical solver for the ridge regression equation
-def minimize_ridge_regression(X, y, reg_param):
+def minimize_ridge_regression(y, X, reg_param):
     prod = X.transpose() @ X+reg_param * np.eye(13)
     w_opt = inv(prod) @ X.transpose() @ y
     return w_opt
