@@ -2,14 +2,14 @@ import numpy as np
 import time
 import math
 
-
-class RidgeRegressor():
+# Multidimensional gradient descent object
+class GradientDescent():
 
     def __init__(self, y, x):
         self.y = y
         self.x = x
         self.data_length = len(y)
-        self.grad_res = 0.01
+        self.grad_res = 0.00001
 
     def calculate_rsme(self, y_hat):
         sum = 0
@@ -50,18 +50,24 @@ class RidgeRegressor():
         iteration = 0
 
         # gradient descent loop
-        while(np.linalg.norm(learning_rate*current_gradient) > 0.000000001 and iteration < 10000):
+        while(np.linalg.norm(learning_rate*current_gradient) > 0.0000000000001 and iteration < 1000):
             current_gradient = self._calculate_gradient(
                 current_w, reg_param)
             new_w = np.subtract(current_w, learning_rate*current_gradient)
             new_cost = self._calculate_optimization_cost(new_w, reg_param)
             current_cost = self._calculate_optimization_cost(current_w, reg_param)
-            while( new_cost > current_cost ):
-                learning_rate = learning_rate/10
-                new_w = np.subtract(current_w, learning_rate*current_gradient)
-                new_cost = self._calculate_optimization_cost(new_w, reg_param)
+            if(new_cost > current_cost):
+                while( new_cost > current_cost ):
+                    learning_rate = learning_rate/2
+                    new_w = np.subtract(current_w, learning_rate*current_gradient)
+                    new_cost = self._calculate_optimization_cost(new_w, reg_param)
+            else:
+                learning_rate = learning_rate*1.1
             current_w = np.subtract(current_w, learning_rate*current_gradient)
             iteration += 1 
+            # print(current_w)
+            print(current_cost)
+            print(iteration)
         end = time.time()
         print('calculation time:', end - start)
         return current_w
@@ -72,10 +78,10 @@ def main():
     data = np.array([[0.06724, 0, 3.24, 0, 0.46, 6.333, 17.2, 5.2146, 4, 430, 16.9, 375.21, 7.34],
                      [0.06724, 0, 3.24, 0, 0.46, 6.333, 17.2, 5.2146, 4, 430, 16.9, 375.21, 7.34]])
     y = np.array([22.6, 22.6])
-    rr = RidgeRegressor(y, data)
-    optimal_weights = rr.minimize_ridge_regression(1)
+    gd = GradientDescent(y, data)
+    optimal_weights = gd.minimize_ridge_regression(1)
     print(optimal_weights)
-    print("rmse:", rr.calculate_rsme(np.inner(optimal_weights, data)))
+    print("rmse:", gd.calculate_rsme(np.inner(optimal_weights, data)))
 
 
 # for isolated testing purposes only:

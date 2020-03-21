@@ -1,3 +1,4 @@
 from .file_manager import FileManager
 from .row_vector import RowVector
-from . import minimize_ridge_regression
+from .gradient_descent import GradientDescent
+from . import calculate_rmse
