@@ -48,8 +48,7 @@ def main():
             # print(test_set.x.shape)
             y_hat = optimal_weights @ test_set.get_x().transpose()
             # print(y_hat)
-            rmse_collector += rmse.calculate_rmse(test_set.get_y(), y_hat )
-
+            rmse_collector += rmse.calculate_rmse(test_set.get_y(), y_hat)
 
         averaged_weights = weight_collector/cross_validation_count
         averaged_rmse = rmse_collector/cross_validation_count

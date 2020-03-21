@@ -1,15 +1,16 @@
 # _________        .__               .__          __           __________    _____    ____________________
 # \_   ___ \_____  |  |   ____  __ __|  | _____ _/  |_  ____   \______   \  /     \  /   _____/\_   _____/
-# /    \  \/\__  \ |  | _/ ___\|  |  \  | \__  \\   __\/ __ \   |       _/ /  \ /  \ \_____  \  |    __)_ 
+# /    \  \/\__  \ |  | _/ ___\|  |  \  | \__  \\   __\/ __ \   |       _/ /  \ /  \ \_____  \  |    __)_
 # \     \____/ __ \|  |_\  \___|  |  /  |__/ __ \|  | \  ___/   |    |   \/    Y    \/        \ |        \
 #  \______  (____  /____/\___  >____/|____(____  /__|  \___  >  |____|_  /\____|__  /_______  //_______  /
-#         \/     \/          \/                \/          \/          \/         \/        \/         \/ 
-        
+#         \/     \/          \/                \/          \/          \/         \/        \/         \/
+
 '''Contains a function to calculate the root mean square error'''
 
-__author__ = "Jsmea Hug"
+__author__ = "Jsmea Hug, Manuel Galliker"
 __maintainer__ = "Jsmea Hug, Manuel Galliker"
 __license__ = "GPL"
+
 
 # rsme calculation requires input of two lists (y and y_hat values)
 def calculate_rmse(y, y_hat):
