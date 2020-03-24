@@ -6,61 +6,46 @@
 #         \/     \/        \/
 '''The main file is used to start up the program and initialize the needed objects'''
 
-__author__ = "Manuel Galliker"
-__maintainer__ = "Manuel Galliker"
+__author__ = "Lukas Reichart"
+__maintainer__ = "Lukas Reichart"
 __license__ = "GPL"
 
-from src import FileManager
-from src import RowVector
-from src import rsme_function as rsme_function
 import pandas as pd
-import statistics
-
+import math as math
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error
 
 def main():
+    # Read the data from the train.csv file (into a pandas data object)
+    data = pd.read_csv('./data/train.csv')
+    yData = data["y"]
+    xData = data.drop(['Id','y'],1)
 
-    file_manager = FileManager()
-    ### Training Data ###
-    training_data = file_manager.load_csv('data/train.csv')
-    mean_collector = []
-    mean_hat_collector = []
+    # Transform the data according to the model
+    print(f'The input data looks like: {data.head()}\n')
 
-    for i in range(len(training_data.index)):
-        # Representation
-        current_vector_data = training_data.loc[i]
-        current_vector_data = current_vector_data.values.tolist()
-        current_row_vector = RowVector(
-            current_vector_data[0], current_vector_data[1], current_vector_data[2:])
+    headers = xData.columns
 
-        # Model Fitting
-        mean_collector.append(current_row_vector.mean)
-        mean_hat_collector.append(statistics.mean(current_row_vector.data))
+    xData[['x6','x7','x8','x9','x10']] = data[headers].applymap(lambda x: x*x)
+    xData[['x11','x12','x13','x14','x15']] = data[headers].applymap(math.exp)
+    xData[['x16','x17','x18','x19','x20']] = data[headers].applymap(math.cos)
+    xData['x21'] = 1
 
-    # Evaluation by rsmi based on training set
-    rsme_error = rsme_function.rsme_function(
-        mean_collector, mean_hat_collector)
-    print('the root mean square error is:')
-    print(rsme_error)
+    print(f'The feature transformed data looks like: {xData.head()}')
 
-    ### Test Data ###
-    test_data = file_manager.load_csv('data/test.csv')
-    id_collector = []
-    mean_hat_collector = []
+    clf = linear_model.SGDRegressor()
+    clf.fit(xData.to_numpy(),yData.to_numpy())
 
-    for i in range(len(test_data.index)):
-        # Representation
-        current_vector_data = test_data.loc[i]
-        current_vector_data = current_vector_data.values.tolist()
-        current_row_vector = RowVector(
-            current_vector_data[0], 0, current_vector_data[1:])
+    predict = clf.predict(xData)
 
-        # Model Fitting
-        id_collector.append(current_row_vector.id)
-        mean_hat_collector.append(statistics.mean(current_row_vector.data))
+    print(f'Linear Coefficients: {clf.coef_}\n')
 
-    output_df = pd.DataFrame(
-        list(zip(id_collector, mean_hat_collector)), columns=['Id', 'y'])
-    file_manager.save_dataframe_to_csv(output_df, 'data/submission_file.csv')
+    print(f'Mean squared error: {mean_squared_error(yData, predict)}\n')
+
+    print(f'Root mean squared error: {math.sqrt(mean_squared_error(yData, predict))}\n')
+
+    # Write the CSV result
+    pd.DataFrame(clf.coef_).to_csv('./data/result.csv', header=False, index=False)
 
     return
 
