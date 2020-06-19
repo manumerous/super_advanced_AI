@@ -64,7 +64,7 @@ def create_model():
     # initializing the pretrained model
     pretrained_basemodel = tf.keras.applications.ResNet50(include_top=False)
 
-    # only enable learning for the last three layers
+    # only enable learning for the last seven layers
     for layer_count, layer in enumerate(pretrained_basemodel.layers):
         if layer_count < len(pretrained_basemodel.layers) - 8:
             layer.trainable = False
@@ -160,13 +160,13 @@ def classify_prediction(prediction):
     img_c = prediction[:, int(prediction_length*2/3):prediction_length*3/3]
     dist_to_b = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_b), axis=1)
     dist_to_c = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_c), axis=1)
-    return tf.keras.backend.less_equal(posistive_dist, negative_dist)
+    return tf.keras.backend.less_equal(dist_to_b, dist_to_c)
 
 
 def main():
     # fm.resize_images(IMAGE_SIZE[0], IMAGE_SIZE[1])
     model = create_model()
-    train_model(model, 6, 3200, 19)
+    train_model(model, 3, 3200, 4)
     predict_test_triplets(model, 1000, 60)
 
     return
