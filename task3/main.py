@@ -19,7 +19,7 @@ def get_one_hot_encoder(data):
 
 def get_best_classifier(xData, yData):
     # create the classifier
-    mlp = MLPClassifier(solver='adam', alpha=1e-5, learning_rate='constant', activation='relu',
+    mlp = MLPClassifier(solver='adam', alpha=1.2e-5, learning_rate='constant', activation='relu',
                     # hidden_layer_sizes=(5,2),
                     random_state=1)
     
@@ -43,14 +43,14 @@ def search_best_classifier(xData, yData):
     # max_iter: default 200, in 50er steps up to 500
     # turn verbose on for better output
     parameter_space = {
-        'hidden_layer_sizes': [(50,50,50),(50,100,50),(100,)],
+        'hidden_layer_sizes': [(100,), (100,100,100)],
         # TODO: also use hidden layer sizes
         # 'activation': ['tanh', 'relu'],
         'activation': ['relu'],
         # 'solver': ['sgd', 'adam'],
         'solver': ['adam'],
         # 'alpha': [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
-        'alpha': [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3],
+        'alpha': [1.2e-5, 1.4e-5, 1.6e-5, 1e-5, 1e-4],
         'learning_rate': ['constant']
     }
 
