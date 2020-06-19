@@ -76,8 +76,9 @@ def main():
     # encode the data into one_hot
     xData_one_hot = enc.transform(xData.to_numpy())
 
-    mlp = search_best_classifier(xData_one_hot, yData)
-    # mlp = get_best_classifier(xData_one_hot, yData)
+    # Here you can switch between using the gridsearch or just using the classifier that we found
+    # mlp = search_best_classifier(xData_one_hot, yData)
+    mlp = get_best_classifier(xData_one_hot, yData)
 
     # predict on the data we just used
     print("Predicting on the data we just trained with:")
