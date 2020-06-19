@@ -15,6 +15,7 @@ import pandas as pd
 import tensorflow as tf
 import file_manager as fm
 from tqdm import tqdm
+import datetime
 
 IMAGE_SIZE = [256, 256, 3]
 
@@ -27,11 +28,8 @@ def triplet_loss(y_true, y_pred, alpha=0.2):
     It is based on the following article:
     <https://medium.com/@prabhnoor0212/siamese-network-keras-31a3a8f37d04>
 
-
-    Implementation of the triplet loss function
-    Arguments:
-    y_true -- true labels, required when you define a loss in Keras, you don't need it in this function.
-    y_pred -- python list containing three objects:
+    Inputs:
+    y_true -- true labels
             anchor_img -- the encodings for the anchor data
             positive_img -- the encodings for the positive data (similar to anchor)
             negative_img -- the encodings for the negative data (different from anchor)
@@ -68,7 +66,7 @@ def create_model():
 
     # only enable learning for the last three layers
     for layer_count, layer in enumerate(pretrained_basemodel.layers):
-        if layer_count < len(pretrained_basemodel.layers) - 4:
+        if layer_count < len(pretrained_basemodel.layers) - 8:
             layer.trainable = False
         else:
             layer.trainable = True
@@ -82,7 +80,7 @@ def create_model():
     model_emb = tf.keras.models.Sequential()
     model_emb.add(pretrained_basemodel)
     model_emb.add(tf.keras.layers.GlobalMaxPool2D())
-    model_emb.add(tf.keras.layers.Flatten())
+    model_emb.add(tf.keras.layers.Flatten()) 
     model_emb.add(tf.keras.layers.Dense(64,
                                               activation=None,
                                               kernel_regularizer=tf.keras.regularizers.l2(1e-3),
@@ -101,75 +99,71 @@ def create_model():
 
 def train_model(model, epochs_count, batch_size, batch_count, backup=True):
     """
-    Train the model
-    ═══════════════
+    used to train the model with data.
 
-    Arguments
-    ─────────
+    Inputs:
 
-    • model: the model to be trained
-    • epochs_count: number of epochs used for training.
-    one epoch corresponds to passing all triplets from the training set
-    once thourgh the network.
-    • backup: Save a backup of the model after every epoch. (defaults to
-        true)
+    - model: the model to be trained
+    - epochs_count: the number of full cycles trough the training data
+    - batch_size: size of the batch that is passed for training at once
+    - batch_count: the amount consequtive training batches. can be maximum: sample_size/batchsize rounded up
     """
-    
+    print(datetime.datetime.now())
     model = tf.keras.models.load_model("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
-    for i in range(epochs_count):
-        for k in range(batch_count):
-            print('working on batch: ', k)
-            model.fit(fm.return_training_data(batch_size, k, IMAGE_SIZE),
-                    epochs=1,
-                    verbose=1)
-            model.save(f"saved_model/current_model.h5")
+    # for i in range(epochs_count):
+    for k in tqdm(range(batch_count)):
+        print('working on batch: ', k)
+        model.fit(fm.return_training_data(batch_size, k, IMAGE_SIZE),
+                epochs=epochs_count,
+                verbose=1)
+        model.save(f"saved_model/current_model.h5")
 
 def predict_test_triplets(model, batch_size, batch_count):
+    """
+    used to predict classifications for the test set.
+
+    Inputs:
+
+    - model: the model to be trained
+    - batch_size: size of the batch that is passed for training at once
+    - batch_count: the amount consequtive training batches. can be maximum: sample_size/batchsize rounded up
+    """
     classifications = np.array([], dtype=np.bool)
+
     for k in tqdm(range(batch_count)):
         test_set = fm.return_test_data(batch_size, IMAGE_SIZE, k)
         batch_prediction = model.predict(test_set, verbose=1)
         classifications = np.append(classifications, classify_prediction(batch_prediction))
-    np.savetxt(f"test_set_predictions.txt", classifications, fmt="%i")
+    np.savetxt(f"test_set_predictions_" + str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")) + ".txt", classifications, fmt="%i")
 
 def classify_prediction(prediction):
     """
-    Classification
-    ══════════════
+    this function is used to determine which if the images B or C is closer to A. 
 
-    The prediction embedding (output of the model) is analyzed to
-    determine whether the first image is closer to the second or the
-    third.
+    Inputs:
 
+    - prediction: anumpy array containing the predicted feature vectors for a single or multiple triplets. 
 
-    Arguments
-    ─────────
+    Output:
 
-    • prediction: embedding of the inputs.
-        • size: (batch_size, embedding_size*3)
+    - 1 if image b is closer
+    - 0 if image c is closer
 
-
-    Returns
-    ───────
-
-    Tensor of dimension (batch_size), result of classification
     """
-    total_length = prediction.shape[-1]
-    anchor = prediction[:, 0:int(total_length/3)]
-    positive = prediction[:, int(total_length/3):int(total_length*2/3)]
-    negative = prediction[:, int(total_length*2/3):total_length]
-
-    pos_dist = tf.keras.backend.sum(tf.keras.backend.square(anchor-positive), axis=1)
-    neg_dist = tf.keras.backend.sum(tf.keras.backend.square(anchor-negative), axis=1)
-
-    return tf.keras.backend.less_equal(pos_dist, neg_dist)
+    prediction_length = prediction.shape[-1]
+    anchor = prediction[:, 0:int(prediction_length/3)]
+    img_b = prediction[:, int(prediction_length/3):int(prediction_length*2/3)]
+    img_c = prediction[:, int(prediction_length*2/3):prediction_length*3/3]
+    dist_to_b = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_b), axis=1)
+    dist_to_c = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_c), axis=1)
+    return tf.keras.backend.less_equal(posistive_dist, negative_dist)
 
 
 def main():
     # fm.resize_images(IMAGE_SIZE[0], IMAGE_SIZE[1])
     model = create_model()
-    train_model(model, 1, 10, 1)
-    predict_test_triplets(model, 10, 8)
+    train_model(model, 6, 16, 3720)
+    predict_test_triplets(model, 1000, 60)
 
     return
 
