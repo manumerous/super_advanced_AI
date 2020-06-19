@@ -52,7 +52,7 @@ def triplet_loss(y_true, y_pred, alpha=0.2):
     neg_dist = tf.keras.backend.sum(tf.keras.backend.square(anchor_img-negative_img), axis=1)
 
     # compute loss
-    basic_loss = pos_dist-neg_dist+alpha
+    basic_loss = pos_dist-neg_dist+0.2
     loss = tf.keras.backend.maximum(basic_loss, 0.0)
     return loss
     
@@ -93,7 +93,7 @@ def create_model():
 
     apn = tf.keras.backend.concatenate([a, p, n], axis=-1)
     model = tf.keras.models.Model([anchor_img, positive_img, negative_img], apn)
-    model.compile(loss=triplet_loss, optimizer=tf.keras.optimizers.Adam(0.00015))
+    model.compile(loss=triplet_loss, optimizer=tf.keras.optimizers.Adam(0.0001))
     model.summary()
     return model
 
@@ -109,12 +109,16 @@ def train_model(model, epochs_count, batch_size, batch_count, backup=True):
     - batch_count: the amount consequtive training batches. can be maximum: sample_size/batchsize rounded up
     """
     print(datetime.datetime.now())
-    model = tf.keras.models.load_model("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
+    # model = tf.keras.models.load_model("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
     # for i in range(epochs_count):
     for k in tqdm(range(batch_count)):
         print('working on batch: ', k)
+        # model.load_weights("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
+        if (k > 0):
+            model = tf.keras.models.load_model("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
         model.fit(fm.return_training_data(batch_size, k, IMAGE_SIZE),
                 epochs=epochs_count,
+                batch_size=16,
                 verbose=1)
         model.save(f"saved_model/current_model.h5")
 
@@ -162,7 +166,7 @@ def classify_prediction(prediction):
 def main():
     # fm.resize_images(IMAGE_SIZE[0], IMAGE_SIZE[1])
     model = create_model()
-    train_model(model, 6, 16, 3720)
+    train_model(model, 6, 3200, 19)
     predict_test_triplets(model, 1000, 60)
 
     return
