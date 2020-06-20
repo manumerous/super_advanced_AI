@@ -97,7 +97,7 @@ def create_model():
     model.summary()
     return model
 
-def train_model(model, epochs_count, batch_size, batch_count, backup=True):
+def train_model(model, epochs_count, batch_size,  backup=True):
     """
     used to train the model with data.
 
@@ -108,19 +108,14 @@ def train_model(model, epochs_count, batch_size, batch_count, backup=True):
     - batch_size: size of the batch that is passed for training at once
     - batch_count: the amount consequtive training batches. can be maximum: sample_size/batchsize rounded up
     """
+
     print(datetime.datetime.now())
-    # model = tf.keras.models.load_model("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
-    # for i in range(epochs_count):
-    for k in tqdm(range(batch_count)):
-        print('working on batch: ', k)
-        # model.load_weights("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
-        if (k > 0):
-            model = tf.keras.models.load_model("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
-        model.fit(fm.return_training_data(batch_size, k, IMAGE_SIZE),
-                epochs=epochs_count,
-                batch_size=16,
-                verbose=1)
-        model.save(f"saved_model/current_model.h5")
+    # model.load_weights("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
+    model.fit(fm.TrainBatchProvider(batch_size),
+            epochs=epochs_count,
+            verbose=1,)
+    model.save(f"saved_model/current_model_3.h5")
+
 
 def predict_test_triplets(model, batch_size, batch_count):
     """
@@ -133,12 +128,11 @@ def predict_test_triplets(model, batch_size, batch_count):
     - batch_count: the amount consequtive training batches. can be maximum: sample_size/batchsize rounded up
     """
     classifications = np.array([], dtype=np.bool)
-
     for k in tqdm(range(batch_count)):
         test_set = fm.return_test_data(batch_size, IMAGE_SIZE, k)
         batch_prediction = model.predict(test_set, verbose=1)
         classifications = np.append(classifications, classify_prediction(batch_prediction))
-    np.savetxt(f"test_set_predictions_" + str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")) + ".txt", classifications, fmt="%i")
+    np.savetxt(f"test_set_predictions.txt", classifications, fmt="%i")
 
 def classify_prediction(prediction):
     """
@@ -154,10 +148,14 @@ def classify_prediction(prediction):
     - 0 if image c is closer
 
     """
+
     prediction_length = prediction.shape[-1]
     anchor = prediction[:, 0:int(prediction_length/3)]
+    positive = prediction[:, int(total_length/3):int(total_length*2/3)]
+    negative = prediction[:, int(total_length*2/3):total_length]
     img_b = prediction[:, int(prediction_length/3):int(prediction_length*2/3)]
     img_c = prediction[:, int(prediction_length*2/3):prediction_length*3/3]
+
     dist_to_b = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_b), axis=1)
     dist_to_c = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_c), axis=1)
     return tf.keras.backend.less_equal(dist_to_b, dist_to_c)
@@ -166,8 +164,9 @@ def classify_prediction(prediction):
 def main():
     # fm.resize_images(IMAGE_SIZE[0], IMAGE_SIZE[1])
     model = create_model()
-    train_model(model, 3, 3200, 4)
-    predict_test_triplets(model, 1000, 60)
+    train_model(model, 6, 16)
+    # model = tf.keras.models.load_model("saved_model/current_model_2.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
+    # predict_test_triplets(model, 1000, 60)
 
     return
 

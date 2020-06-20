@@ -52,7 +52,7 @@ def triplet_loss(y_true, y_pred, alpha=0.2):
     neg_dist = tf.keras.backend.sum(tf.keras.backend.square(anchor_img-negative_img), axis=1)
 
     # compute loss
-    basic_loss = pos_dist-neg_dist+alpha
+    basic_loss = pos_dist-neg_dist+0.2
     loss = tf.keras.backend.maximum(basic_loss, 0.0)
     return loss
     
@@ -64,9 +64,9 @@ def create_model():
     # initializing the pretrained model
     pretrained_basemodel = tf.keras.applications.ResNet50(include_top=False)
 
-    # only enable learning for the last three layers
+    # only enable learning for the last seven layers
     for layer_count, layer in enumerate(pretrained_basemodel.layers):
-        if layer_count < len(pretrained_basemodel.layers) - 4:
+        if layer_count < len(pretrained_basemodel.layers) - 8:
             layer.trainable = False
         else:
             layer.trainable = True
@@ -79,8 +79,8 @@ def create_model():
 
     model_emb = tf.keras.models.Sequential()
     model_emb.add(pretrained_basemodel)
-    model_emb.add(tf.keras.layers.Flatten())
-    model_emb.add(tf.keras.layers.GlobalMaxPool2D())   
+    model_emb.add(tf.keras.layers.GlobalMaxPool2D())
+    model_emb.add(tf.keras.layers.Flatten()) 
     model_emb.add(tf.keras.layers.Dense(64,
                                               activation=None,
                                               kernel_regularizer=tf.keras.regularizers.l2(1e-3),
@@ -93,11 +93,11 @@ def create_model():
 
     apn = tf.keras.backend.concatenate([a, p, n], axis=-1)
     model = tf.keras.models.Model([anchor_img, positive_img, negative_img], apn)
-    model.compile(loss=triplet_loss, optimizer=tf.keras.optimizers.Adam(0.00015))
+    model.compile(loss=triplet_loss, optimizer=tf.keras.optimizers.Adam(0.0001))
     model.summary()
     return model
 
-def train_model(model, epochs_count, batch_size, batch_count, backup=True):
+def train_model(model, epochs_count,  backup=True):
     """
     used to train the model with data.
 
@@ -108,18 +108,19 @@ def train_model(model, epochs_count, batch_size, batch_count, backup=True):
     - batch_size: size of the batch that is passed for training at once
     - batch_count: the amount consequtive training batches. can be maximum: sample_size/batchsize rounded up
     """
+
     print(datetime.datetime.now())
-    # model = tf.keras.models.load_model("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
-    for i in range(epochs_count):
-        for k in tqdm(range(batch_count)):
-            print('working on batch: ', k)
-            model.fit(fm.return_training_data(batch_size, k, IMAGE_SIZE),
-                    epochs=1,
-                    verbose=1)
-            model.save(f"saved_model/current_model.h5")
+    for k in tqdm(range(epochs_count)):
+        print('working on batch: ', k)
+        # model.load_weights("saved_model/current_model.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
+        model.fit(fm.TrainBatchProvider(16),
+                epochs=3,
+                verbose=1,)
+        model.save(f"saved_model/current_model_2.h5")
+
 
 def predict_test_triplets(model, batch_size, batch_count):
-     """
+    """
     used to predict classifications for the test set.
 
     Inputs:
@@ -133,7 +134,7 @@ def predict_test_triplets(model, batch_size, batch_count):
         test_set = fm.return_test_data(batch_size, IMAGE_SIZE, k)
         batch_prediction = model.predict(test_set, verbose=1)
         classifications = np.append(classifications, classify_prediction(batch_prediction))
-    np.savetxt(f"test_set_predictions_" + str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")) + ".txt", classifications, fmt="%i")
+    np.savetxt(f"test_set_predictions.txt", classifications, fmt="%i")
 
 def classify_prediction(prediction):
     """
@@ -149,19 +150,24 @@ def classify_prediction(prediction):
     - 0 if image c is closer
 
     """
+
     prediction_length = prediction.shape[-1]
     anchor = prediction[:, 0:int(prediction_length/3)]
+    positive = prediction[:, int(total_length/3):int(total_length*2/3)]
+    negative = prediction[:, int(total_length*2/3):total_length]
     img_b = prediction[:, int(prediction_length/3):int(prediction_length*2/3)]
     img_c = prediction[:, int(prediction_length*2/3):prediction_length*3/3]
+
     dist_to_b = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_b), axis=1)
     dist_to_c = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_c), axis=1)
-    return tf.keras.backend.less_equal(posistive_dist, negative_dist)
+    return tf.keras.backend.less_equal(dist_to_b, dist_to_c)
 
 
 def main():
     # fm.resize_images(IMAGE_SIZE[0], IMAGE_SIZE[1])
-    model = create_model()
-    train_model(model, 1, 1000, 60)
+    # model = create_model()
+    # train_model(model, 2)
+    model = tf.keras.models.load_model("saved_model/current_model_2.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
     predict_test_triplets(model, 1000, 60)
 
     return

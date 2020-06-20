@@ -14,6 +14,39 @@ from os import path
 from os import makedirs
 import sys
 from tqdm import tqdm
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.utils import Sequence
+from math import floor
+from math import ceil
+
+class TrainBatchProvider(Sequence):
+    """
+    This class allowes the model to acces data as it needs it. 
+    """
+
+    def __init__(self, batch_size=16):
+        self.batch_size = batch_size
+        self.training_data = np.loadtxt("train_triplets.txt", dtype=np.int32, delimiter=" ")
+        self.length = floor(self.training_data.shape[0]/self.batch_size)
+        self.on_epoch_end()
+
+    def __getitem__(self, index):
+        triplets = self.training_data[self.batch_size*index:self.batch_size*(index+1), :]
+        A = preprocess_input(np.asarray([img_to_array(load_img(covert_to_path(t[0]))) for t in triplets]))
+        P = preprocess_input(np.asarray([img_to_array(load_img(covert_to_path(t[1]))) for t in triplets]))
+        N = preprocess_input(np.asarray([img_to_array(load_img(covert_to_path(t[2]))) for t in triplets]))
+
+        # labels for keras
+        labels = np.asarray([1]*self.batch_size, dtype=np.float32)
+        return [A, P, N], labels
+
+    def __len__(self):
+        return self.length
+
+def covert_to_path(i):
+    #return the corresponding path to image i
+    return "resized_images/{:0>5}.jpg".format(i)
 
 
 def resize_images(sizex, sizey):
@@ -78,6 +111,10 @@ def return_test_data(batch_size, image_size, batch_counter):
     P = preprocess_input(img_P_array)
     N = preprocess_input(img_N_array)
     return [A, P, N]
+
+
+     
+
 
 
 
