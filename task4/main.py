@@ -151,10 +151,8 @@ def classify_prediction(prediction):
 
     prediction_length = prediction.shape[-1]
     anchor = prediction[:, 0:int(prediction_length/3)]
-    positive = prediction[:, int(prediction_length/3):int(prediction_length*2/3)]
-    negative = prediction[:, int(prediction_length*2/3):prediction_length]
     img_b = prediction[:, int(prediction_length/3):int(prediction_length*2/3)]
-    img_c = prediction[:, int(prediction_length*2/3):prediction_length*3/3]
+    img_c = prediction[:, int(prediction_length*2/3):prediction_length]
 
     dist_to_b = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_b), axis=1)
     dist_to_c = tf.keras.backend.sum(tf.keras.backend.square(anchor-img_c), axis=1)
