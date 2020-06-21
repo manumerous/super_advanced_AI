@@ -132,7 +132,7 @@ def predict_test_triplets(model, batch_size, batch_count):
         test_set = fm.return_test_data(batch_size, IMAGE_SIZE, k)
         batch_prediction = model.predict(test_set, verbose=1)
         classifications = np.append(classifications, classify_prediction(batch_prediction))
-    np.savetxt(f"test_set_predictions.txt", classifications, fmt="%i")
+    np.savetxt(f"test_set_predictions_new.txt", classifications, fmt="%i")
 
 def classify_prediction(prediction):
     """
@@ -151,8 +151,8 @@ def classify_prediction(prediction):
 
     prediction_length = prediction.shape[-1]
     anchor = prediction[:, 0:int(prediction_length/3)]
-    positive = prediction[:, int(total_length/3):int(total_length*2/3)]
-    negative = prediction[:, int(total_length*2/3):total_length]
+    positive = prediction[:, int(prediction_length/3):int(prediction_length*2/3)]
+    negative = prediction[:, int(prediction_length*2/3):prediction_length]
     img_b = prediction[:, int(prediction_length/3):int(prediction_length*2/3)]
     img_c = prediction[:, int(prediction_length*2/3):prediction_length*3/3]
 
@@ -163,10 +163,10 @@ def classify_prediction(prediction):
 
 def main():
     # fm.resize_images(IMAGE_SIZE[0], IMAGE_SIZE[1])
-    model = create_model()
-    train_model(model, 6, 16)
-    # model = tf.keras.models.load_model("saved_model/current_model_2.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
-    # predict_test_triplets(model, 1000, 60)
+    # model = create_model()
+    # train_model(model, 6, 16)
+    model = tf.keras.models.load_model("saved_model/current_model_3.h5", custom_objects={'triplet_loss':triplet_loss}, compile=True)
+    predict_test_triplets(model, 1000, 60)
 
     return
 
