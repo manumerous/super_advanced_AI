@@ -1,3 +1,3 @@
-# super_advanced_AI
+# Super Advanced AI (Machine Learning Mini Projects)
 
-This repository contains the code of all coding exercises to the course Introduction to Machine Learning from Jsmea, Lukas and Manuel 
+This repository contains the code of all mini projects to the ETHZ course Introduction to Machine Learning from Jsmea, Lukas and Manuel 
